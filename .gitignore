@@ -1,0 +1,10 @@
+/.pytest_cache
+/.tox
+/venv
+/.idea
+/build
+/vectorzz.egg-info
+/docs/build
+make.bat
+Makefile
+.coverage

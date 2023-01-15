@@ -1,0 +1,7 @@
+[project]
+name = "vectorzz"
+requires-python = ">=3.11"
+version = "1.0"
+
+[tool.setuptools]
+py-modules = []
