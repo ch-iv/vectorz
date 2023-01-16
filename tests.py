@@ -120,6 +120,64 @@ def test_initialize_line3():
     assert str(line) == "Line3(Vec3(1, 2, 3), Vec3(3, 3, 3))"
 
 
+def test_line3_is_parallel():
+    line1 = Line3(Vec3(1, 2, 3), Vec3(4, 5, 6))
+    line2 = Line3(Vec3(6, 7, 8), Vec3(4, 5, 6))
+    assert line1.is_parallel(line2)
+    line1 = Line3(Vec3(1, 2, 3), Vec3(4, 5, 6))
+    line2 = Line3(Vec3(6, 7, 8), Vec3(8, 10, 12))
+    assert line1.is_parallel(line2)
+    line1 = Line3(Vec3(1, 2, 3), Vec3(4, 5, 6))
+    line2 = Line3(Vec3(6, 7, 8), Vec3(4, 5, 7))
+    assert not line1.is_parallel(line2)
+    line1 = Line3(Vec3(1, 2, 3), Vec3(-1, -2, 5))
+    line2 = Line3(Vec3(6, 7, 8), Vec3(-0.5, -1, 2.5))
+    assert line1.is_parallel(line2)
+    line1 = Line3(Vec3(1, 2, 3), Vec3(-1, -2, 5))
+    line2 = Line3(Vec3(6, 7, 8), Vec3(-0.5, -1, 2.6))
+    assert not line1.is_parallel(line2)
+
+
+def test_line3_contains_point():
+    line = Line3(Vec3(1, 2, 3), Vec3(4, 5, 6))
+    assert line.contains_point(P3(1, 2, 3))
+    assert line.contains_point(P3(9, 12, 15))
+    assert line.contains_point(P3(3, 4.5, 6))
+    assert not line.contains_point(P3(4, 5, 6))
+    assert not line.contains_point(P3(2.6, 3.5, 4.5))
+    assert not line.contains_point(P3(2.5, 3.6, 4.5))
+    assert not line.contains_point(P3(2.5, 3.5, 4.6))
+    assert not line.contains_point(P3(2.4, 3.5, 4.5))
+    assert not line.contains_point(P3(2.5, 3.4, 4.5))
+    assert not line.contains_point(P3(2.5, 3.5, 4.4))
+    assert not line.contains_point(P3(1, 2, 4))
+    assert not line.contains_point(P3(1, 2, 2))
+    assert not line.contains_point(P3(1, 3, 3))
+    assert not line.contains_point(P3(1, 1, 3))
+    assert not line.contains_point(P3(0, 2, 3))
+    assert not line.contains_point(P3(2, 2, 3))
+
+
+def test_vec3_to_point():
+    v = Vec3(1, 2, 3)
+    assert v.to_point() == P3(1, 2, 3)
+    v = Vec3(-1, -2, -3)
+    assert v.to_point() == P3(-1, -2, -3)
+    v = Vec3(0.5, 1.0, 1.5)
+    assert v.to_point() == P3(0.5, 1.0, 1.5)
+
+
+def test_line3_equals():
+    line1 = Line3(Vec3(1, 2, 3), Vec3(4, 5, 6))
+    assert line1 == line1
+    assert line1 == Line3(Vec3(1, 2, 3), Vec3(8, 10, 12))
+    assert line1 == Line3(Vec3(5, 7, 9), Vec3(8, 10, 12))
+    assert line1 == Line3(Vec3(-1, -0.5, 0), Vec3(2, 2.5, 3))
+    assert line1 != Line3(Vec3(1, 2, 3), Vec3(4, 5, 7))
+    assert line1 != Line3(Vec3(1, 2, 3), Vec3(4, 6, 6))
+    assert line1 != Line3(Vec3(2.25, 2, 3), Vec3(4, 5, 6))
+
+
 def test_str_vec3():
     v = Vec3(1, 2, 3)
     assert str(v) == "Vec3(1, 2, 3)"

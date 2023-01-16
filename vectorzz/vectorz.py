@@ -87,6 +87,10 @@ class Vec3:
         """Calculates the magnitude of the vector"""
         return math.sqrt(self.x**2 + self.y**2 + self.z**2)
 
+    def to_point(self) -> P3:
+        """Converts a vector to a point"""
+        return P3(self.x, self.y, self.z)
+
 
 class Vec2:
     """Represents a 2D vector with x and y components."""
@@ -145,6 +149,40 @@ class Line3:
             )
         self.origin_vector: Vec3 = origin_vector
         self.direction_vector: Vec3 = direction_vector
+
+    def is_parallel(self, other: Line3) -> bool:
+        """Checks if two lines are parallel"""
+        # check if the two direction vectors are multiples of each other
+        coefficient_values = [
+            self.direction_vector.x / other.direction_vector.x,
+            self.direction_vector.y / other.direction_vector.y,
+            self.direction_vector.z / other.direction_vector.z
+        ]
+        return len(set(coefficient_values)) == 1
+
+    def contains_point(self, point: P3) -> bool:
+        """Checks if a specific point is on the line"""
+        # A vector is in the form r = origin_vec + t * direction_vec
+        # A point is on the line if there exists a t such that
+        # r = point
+
+        # calculate t values for each component
+        t_values = [
+            (point.x - self.origin_vector.x) / self.direction_vector.x,
+            (point.y - self.origin_vector.y) / self.direction_vector.y,
+            (point.z - self.origin_vector.z) / self.direction_vector.z
+        ]
+        # the point is on the line if all t values are equal
+        return len(set(t_values)) == 1
+
+    def __eq__(self, other: Line3) -> bool:
+        """Checks if two lines are equal"""
+        # Two lines are equal if they are parallel
+        # and the origin vector of one is on the other
+        return (
+                self.is_parallel(other) and
+                self.contains_point(other.origin_vector.to_point())
+        )
 
     @staticmethod
     def from_points(p1: P3, p2: P3) -> Line3:
