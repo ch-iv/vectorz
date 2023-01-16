@@ -1,4 +1,4 @@
-vectorzz.vectorz
+﻿vectorzz.vectorz
 ================
 
 .. automodule:: vectorzz.vectorz
@@ -27,6 +27,8 @@ vectorzz.vectorz
 
    .. autosummary::
    
+      Line3
+      P3
       Vec2
       Vec3
    

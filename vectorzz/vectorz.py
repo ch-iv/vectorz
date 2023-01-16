@@ -1,8 +1,39 @@
 """This module provides a class for 2D and 3D vectors
  as well as utility functions for them"""
+from __future__ import annotations
 
 import math
 from typing import Self
+
+
+class P3:
+    """Represents a point in 3D space"""
+    def __init__(self, x: int | float, y: int | float, z: int | float) -> None:
+        self.x = x
+        self.y = y
+        self.z = z
+
+    def __str__(self) -> str:
+        """Return a string representation of the point"""
+        return f"P3({self.x}, {self.y}, {self.z})"
+
+    __repr__ = __str__
+
+    def __sub__(self, other: Self) -> Self:
+        """Subtract one point in 3D space from another"""
+        return P3(self.x - other.x, self.y - other.y, self.z - other.z)
+
+    def __add__(self, other: Self) -> Self:
+        """Adds two 3D points together"""
+        return P3(self.x + other.x, self.y + other.y, self.z + other.z)
+
+    def __eq__(self, other) -> bool:
+        """Check if two points are equal"""
+        return self.x == other.x and self.y == other.y and self.z == other.z
+
+    def to_vec3(self) -> Vec3:
+        """Converts a point to a 3D vector from the origin to that point"""
+        return Vec3(self.x, self.y, self.z)
 
 
 class Vec3:
@@ -19,7 +50,7 @@ class Vec3:
         self.z = z
 
     def __str__(self):
-        return f"({self.x}, {self.y}, {self.z})"
+        return f"Vec3({self.x}, {self.y}, {self.z})"
 
     __repr__ = __str__
 
@@ -66,7 +97,7 @@ class Vec2:
         self.y = y
 
     def __str__(self):
-        return f"({self.x}, {self.y})"
+        return f"Vec2({self.x}, {self.y})"
 
     __repr__ = __str__
 
@@ -102,6 +133,28 @@ class Vec2:
     def magnitude(self):
         """Calculates the magnitude of the vector"""
         return math.sqrt(self.x**2 + self.y**2)
+
+
+class Line3:
+    """Represents a line in 3D space"""
+    def __init__(self, origin_vector: Vec3, direction_vector: Vec3) -> None:
+        if type(origin_vector) != Vec3 or type(direction_vector) != Vec3:
+            raise ValueError(
+                f"Expected type Vec3 for both arguments, got"
+                f" {type(origin_vector)} and {type(direction_vector)} instead"
+            )
+        self.origin_vector: Vec3 = origin_vector
+        self.direction_vector: Vec3 = direction_vector
+
+    @staticmethod
+    def from_points(p1: P3, p2: P3) -> Line3:
+        """Creates a line from two points"""
+        return Line3(p1.to_vec3(), (p2 - p1).to_vec3())
+
+    def __str__(self) -> str:
+        return f"Line3({self.origin_vector}, {self.direction_vector})"
+
+    __repr__ = __str__
 
 
 class DifferentDimensionException(Exception):

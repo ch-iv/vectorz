@@ -8,6 +8,8 @@ from vectorzz import parallelogram_area
 from vectorzz import scalar_projection
 from vectorzz import angle_between_deg
 from vectorzz import DifferentDimensionException
+from vectorzz import Line3
+from vectorzz import P3
 
 
 def test_initialize_vec3():
@@ -59,38 +61,97 @@ def test_initialize_vec2():
     assert v.y == -2.5
 
 
+def test_initialize_point3():
+    p = P3(1, 2, 3)
+    assert str(p) == "P3(1, 2, 3)"
+    p = P3(-1, -2, -3)
+    assert str(p) == "P3(-1, -2, -3)"
+    p = P3(0, 0, 0)
+    assert str(p) == "P3(0, 0, 0)"
+    p = P3(0.5, 1.0, 1.5)
+    assert str(p) == "P3(0.5, 1.0, 1.5)"
+    p = P3(-0.5, -1.0, -1.5)
+    assert str(p) == "P3(-0.5, -1.0, -1.5)"
+
+
+def test_subtract_point3():
+    p1 = P3(1, 2, 3)
+    p2 = P3(4, 5, 6)
+    print(p1 - p2)
+    assert p1 - p2 == P3(-3, -3, -3)
+    assert p2 - p1 == P3(3, 3, 3)
+    p1 = P3(-1, -2, -3)
+    p2 = P3(-4, -5, -6)
+    assert p1 - p2 == P3(3, 3, 3)
+    assert p2 - p1 == P3(-3, -3, -3)
+    p1 = P3(0.5, 1.0, 1.5)
+    p2 = P3(1.0, 1.5, 2.0)
+    assert p1 - p2 == P3(-0.5, -0.5, -0.5)
+    assert p2 - p1 == P3(0.5, 0.5, 0.5)
+
+
+def test_add_points3():
+    p1 = P3(1, 2, 3)
+    p2 = P3(4, 5, 6)
+    assert p1 + p2 == P3(5, 7, 9)
+    p1 = P3(-1, -2, -3)
+    p2 = P3(-4, -5, -6)
+    assert p1 + p2 == P3(-5, -7, -9)
+    p1 = P3(0.5, 1.0, 1.5)
+    p2 = P3(1.0, 1.5, 2.0)
+    assert p1 + p2 == P3(1.5, 2.5, 3.5)
+
+
+def test_point3_to_vec3():
+    p1 = P3(1, 2, 3)
+    assert p1.to_vec3() == Vec3(1, 2, 3)
+    p1 = P3(-1, -2, -3)
+    assert p1.to_vec3() == Vec3(-1, -2, -3)
+    p1 = P3(0.5, 1.0, 1.5)
+    assert p1.to_vec3() == Vec3(0.5, 1.0, 1.5)
+
+
+def test_initialize_line3():
+    with pytest.raises(ValueError):
+        Line3(P3(1, 2, 3), Vec2(1, 2))
+    line = Line3(Vec3(1, 2, 3), Vec3(4, 5, 6))
+    assert str(line) == "Line3(Vec3(1, 2, 3), Vec3(4, 5, 6))"
+    line = Line3.from_points(P3(1, 2, 3), P3(4, 5, 6))
+    assert str(line) == "Line3(Vec3(1, 2, 3), Vec3(3, 3, 3))"
+
+
 def test_str_vec3():
     v = Vec3(1, 2, 3)
-    assert str(v) == "(1, 2, 3)"
+    assert str(v) == "Vec3(1, 2, 3)"
 
     v = Vec3(-1, -2, -3)
-    assert str(v) == "(-1, -2, -3)"
+    assert str(v) == "Vec3(-1, -2, -3)"
 
     v = Vec3(0, 0, 0)
-    assert str(v) == "(0, 0, 0)"
+    assert str(v) == "Vec3(0, 0, 0)"
 
     v = Vec3(1.5, 2.5, 3.5)
-    assert str(v) == "(1.5, 2.5, 3.5)"
+    assert str(v) == "Vec3(1.5, 2.5, 3.5)"
 
     v = Vec3(-1.5, -2.5, -3.5)
-    assert str(v) == "(-1.5, -2.5, -3.5)"
+    assert str(v) == "Vec3(-1.5, -2.5, -3.5)"
 
 
 def test_str_vec2():
     v = Vec2(1, 2)
-    assert str(v) == "(1, 2)"
+    assert str(v) == "Vec2(1, 2)"
 
     v = Vec2(-1, -2)
-    assert str(v) == "(-1, -2)"
+    assert str(v) == "Vec2(-1, -2)"
 
     v = Vec2(0, 0)
-    assert str(v) == "(0, 0)"
+    assert str(v) == "Vec2(0, 0)"
 
     v = Vec2(1.5, 2.5)
-    assert str(v) == "(1.5, 2.5)"
+    assert str(v) == "Vec2(1.5, 2.5)"
 
     v = Vec2(-1.5, -2.5)
-    assert str(v) == "(-1.5, -2.5)"
+    assert str(v) == "Vec2(-1.5, -2.5)"
 
 
 def test_magnitude_vec3():
