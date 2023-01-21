@@ -10,6 +10,8 @@ from vectorzz import angle_between_deg
 from vectorzz import DifferentDimensionException
 from vectorzz import Line3
 from vectorzz import P3
+from vectorzz import Plane
+from vectorzz import is_scalar_multiple
 
 
 def test_initialize_vec3():
@@ -407,3 +409,54 @@ def test_method_undefined_for_vec2():
         cross(v1, v2)
     with pytest.raises(ValueError):
         parallelogram_area(v1, v2)
+
+
+def test_initialize_plane():
+    p1 = Plane(P3(4, 5, 6,), Vec3(1, 2, 3))
+    assert str(p1) == "Plane(P3(4, 5, 6), Vec3(1, 2, 3))"
+
+
+def test_plane_d():
+    p1 = Plane(P3(4, 5, 6), Vec3(1, 2, 3))
+    assert p1.d == -32
+    p2 = Plane(P3(0, 0, 0), Vec3(0, 0, 0))
+    assert p2.d == 0
+
+
+def test_plane_contains_point():
+    p1 = Plane(P3(4, 5, 6), Vec3(1, 2, 3))
+    assert p1.contains_point(P3(4, 5, 6))
+    assert p1.contains_point(P3(0, 0, 32/3))
+    assert not p1.contains_point(P3(0, 0, 0))
+
+
+def test_plane_eq():
+    p1 = Plane(P3(4, 5, 6), Vec3(1, 2, 3))
+    p2 = Plane(P3(4, 5, 6), Vec3(1, 2, 3))
+    assert p1 == p2
+    p3 = Plane(P3(4, 5, 6), Vec3(2, 4, 6))
+    assert p1 == p3
+    p4 = Plane(P3(0, 0, 32/3), Vec3(1, 2, 3))
+    assert p1 == p4
+    p4 = Plane(P3(0, 0, 33 / 3), Vec3(1, 2, 3))
+    assert p1 != p4
+
+
+def test_is_scalar_multiple():
+    assert is_scalar_multiple(Vec3(1, 2, 3), Vec3(2, 4, 6))
+    assert is_scalar_multiple(Vec3(145, 92, 33), Vec3(145/7, 92/7, 33/7))
+    assert not is_scalar_multiple(Vec3(1, 2, 3), Vec3(2, 4, 7))
+
+    with pytest.raises(ValueError):
+        is_scalar_multiple(Vec3(1, 2, 3), Vec2(2, 4))
+    with pytest.raises(ValueError):
+        is_scalar_multiple(P3(1, 2, 3), Vec3(2, 4, 7))
+
+
+def test_is_line_parallel():
+    p1 = Plane(P3(4, 5, 6), Vec3(1, 2, 3))
+    assert p1.is_parallel(Plane(P3(4, 5, 6), Vec3(1, 2, 3)))
+    assert p1.is_parallel(Plane(P3(4, 5, 6), Vec3(2, 4, 6)))
+    assert p1.is_parallel(Plane(P3(0, 0, 32/3), Vec3(1, 2, 3)))
+    assert p1.is_parallel(Plane(P3(0, 0, 33/3), Vec3(1, 2, 3)))
+    assert not p1.is_parallel(Plane(P3(0, 0, 0), Vec3(1, 2, 42)))

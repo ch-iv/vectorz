@@ -195,6 +195,53 @@ class Line3:
     __repr__ = __str__
 
 
+class Plane:
+    """
+    Represents a plane in 3D space
+
+    A plane in 3D space can be defined by:
+    - 3 points on the plane
+    - a point on the plane and a normal vector
+    - 2 lines on the plane
+    - a point and a line
+    - a point and 2 direction vectors
+    """
+    def __init__(self, point: P3, normal: Vec3) -> None:
+        """Creates a plane from a point and a normal vector"""
+        self.point: P3 = point
+        self.normal: Vec3 = normal
+        # The equation of a plane is Ax + By + Cz + D = 0
+        # where A, B, C are the components of the normal vector
+        # and D is the negative dot product of the normal vector and the point
+        self.d = -self.normal.x * self.point.x\
+                 - self.normal.y * self.point.y\
+                 - self.normal.z * self.point.z
+
+    def __str__(self) -> str:
+        return f"Plane({self.point}, {self.normal})"
+
+    __repr__ = __str__
+
+    def __eq__(self, other: Plane) -> bool:
+        """Checks if two planes are equal"""
+        # Two planes are equal if they have the same normal vector
+        # and the same D value
+        return is_scalar_multiple(self.normal, other.normal)\
+            and self.contains_point(other.point)
+
+    def contains_point(self, point: P3) -> bool:
+        """Checks if a point is on the plane"""
+        return (
+                self.normal.x * point.x
+                + self.normal.y * point.y
+                + self.normal.z * point.z + self.d
+        ) == 0
+
+    def is_parallel(self, other: Plane) -> bool:
+        """Checks if two planes are parallel"""
+        return is_scalar_multiple(self.normal, other.normal)
+
+
 class DifferentDimensionException(Exception):
     """An error that is raised when two vectors have different dimensions"""
     def __init__(self, *args):
@@ -254,4 +301,14 @@ def parallelogram_area(v1: Vec3, v2: Vec3) -> float | int:
     else:
         raise ValueError(
             "Parallelogram area is only defined for 3D vectors of type Vec3"
+        )
+
+
+def is_scalar_multiple(v1: Vec3, v2: Vec3) -> bool:
+    """Checks if two vectors are scalar multiples of each other"""
+    if type(v1) == Vec3 and type(v2) == Vec3:
+        return v1.x / v2.x == v1.y / v2.y == v1.z / v2.z
+    else:
+        raise ValueError(
+            "Scalar multiple is only defined for 3D vectors of type Vec3"
         )
