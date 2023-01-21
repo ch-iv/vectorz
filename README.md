@@ -1,6 +1,6 @@
 [![CodeFactor](https://www.codefactor.io/repository/github/ch-iv/vectorz/badge)](https://www.codefactor.io/repository/github/ch-iv/vectorz)
 # Vectorz
-Vectorz is a library for working with 2D and 3D vectors in Java. It is designed to be fast, flexible, and easy to use.
+Vectorz is a library for working with 2D and 3D vectors in Python. It is designed to be fast, flexible, and easy to use.
 It provides functionality for creating vectors and performing operations on them, such as addition, subtraction, dot product, cross product, and more.
 
 ## Examples
