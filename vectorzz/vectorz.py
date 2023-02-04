@@ -312,3 +312,30 @@ def is_scalar_multiple(v1: Vec3, v2: Vec3) -> bool:
         raise ValueError(
             "Scalar multiple is only defined for 3D vectors of type Vec3"
         )
+
+
+class ShortestDistance:
+    @staticmethod
+    def point_point(p1: P3, p2: P3):
+        p1p2_vector = p1.to_vec3() - p2.to_vec3()
+        return p1p2_vector.magnitude()
+
+    @staticmethod
+    def point_line(point: P3, line: Line3):
+        pq = point.to_vec3() - line.origin_vector
+
+    @staticmethod
+    def line_line(line1: Line3, line2: Line3):
+        pass
+
+    @staticmethod
+    def point_plane(point: P3, plane: Plane):
+        pass
+
+    @staticmethod
+    def line_plane(line: Line3, plane: Plane):
+        pass
+
+    @staticmethod
+    def plane_plane(plane1: Plane, plane2: Plane):
+        pass
