@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 from typing import Self
+import matplotlib.pyplot as plt
 
 
 class P3:
@@ -153,27 +154,36 @@ class Line3:
     def is_parallel(self, other: Line3) -> bool:
         """Checks if two lines are parallel"""
         # check if the two direction vectors are multiples of each other
-        coefficient_values = [
-            self.direction_vector.x / other.direction_vector.x,
-            self.direction_vector.y / other.direction_vector.y,
-            self.direction_vector.z / other.direction_vector.z
-        ]
-        return len(set(coefficient_values)) == 1
+        try:
+            coefficient_values = [
+                self.direction_vector.x / other.direction_vector.x,
+                self.direction_vector.y / other.direction_vector.y,
+                self.direction_vector.z / other.direction_vector.z
+            ]
+            return len(set(coefficient_values)) == 1
+        except ZeroDivisionError:
+            # If a division by 0 error occurs, the lines are
+            # only parallel if both direction vectors are the zero vector
+            return self.direction_vector == other.direction_vector
 
     def contains_point(self, point: P3) -> bool:
         """Checks if a specific point is on the line"""
-        # A vector is in the form r = origin_vec + t * direction_vec
-        # A point is on the line if there exists a t such that
+        # If a vector is in the form: r = origin_vec + t * direction_vec,
+        # a point is on the line, if there exists a t such that
         # r = point
-
-        # calculate t values for each component
-        t_values = [
-            (point.x - self.origin_vector.x) / self.direction_vector.x,
-            (point.y - self.origin_vector.y) / self.direction_vector.y,
-            (point.z - self.origin_vector.z) / self.direction_vector.z
-        ]
-        # the point is on the line if all t values are equal
-        return len(set(t_values)) == 1
+        try:
+            # calculate t values for each component
+            t_values = [
+                (point.x - self.origin_vector.x) / self.direction_vector.x,
+                (point.y - self.origin_vector.y) / self.direction_vector.y,
+                (point.z - self.origin_vector.z) / self.direction_vector.z
+            ]
+            # the point is on the line if all t values are equal
+            return len(set(t_values)) == 1
+        except ZeroDivisionError:
+            # If a division by 0 error occurs, the point is on the line if
+            # the origin vector is the point
+            return self.origin_vector.to_point() == point
 
     def __eq__(self, other: Line3) -> bool:
         """Checks if two lines are equal"""
@@ -193,6 +203,11 @@ class Line3:
         return f"Line3({self.origin_vector}, {self.direction_vector})"
 
     __repr__ = __str__
+
+    def point_at_t(self, t: int | float) -> P3:
+        """Calculates the point at a specific t value.
+        t value is a scalar which multiplies the direction vector"""
+        return (self.origin_vector + self.direction_vector * t).to_point()
 
 
 class Plane:
@@ -217,6 +232,11 @@ class Plane:
                  - self.normal.y * self.point.y\
                  - self.normal.z * self.point.z
 
+    @staticmethod
+    def from_normal_and_d(normal: Vec3, d: int | float) -> Plane:
+        """Creates a plane from a normal vector and a d value"""
+        return Plane(P3(0, 0, -d / normal.z), normal)
+
     def __str__(self) -> str:
         return f"Plane({self.point}, {self.normal})"
 
@@ -237,9 +257,16 @@ class Plane:
                 + self.normal.z * point.z + self.d
         ) == 0
 
-    def is_parallel(self, other: Plane) -> bool:
-        """Checks if two planes are parallel"""
-        return is_scalar_multiple(self.normal, other.normal)
+    def is_parallel(self, other: Plane | Line3) -> bool:
+        """Checks if two planes or a plane and a line are parallel"""
+        if type(other) == Plane:
+            return is_scalar_multiple(self.normal, other.normal)
+        elif type(other) == Line3:
+            return dot(self.normal, other.direction_vector) == 0
+        else:
+            raise ValueError(
+                f"Expected type Plane or Line3, got {type(other)} instead"
+            )
 
 
 class DifferentDimensionException(Exception):
@@ -314,6 +341,11 @@ def is_scalar_multiple(v1: Vec3, v2: Vec3) -> bool:
         )
 
 
+def neg(n: int | float) -> int | float:
+    """Returns the negative of a number"""
+    return -n
+
+
 class ShortestDistance:
     @staticmethod
     def point_point(p1: P3, p2: P3):
@@ -322,7 +354,7 @@ class ShortestDistance:
 
     @staticmethod
     def point_line(point: P3, line: Line3):
-        pq = point.to_vec3() - line.origin_vector
+        pass
 
     @staticmethod
     def line_line(line1: Line3, line2: Line3):
@@ -339,3 +371,93 @@ class ShortestDistance:
     @staticmethod
     def plane_plane(plane1: Plane, plane2: Plane):
         pass
+
+
+class Intersection:
+    @staticmethod
+    def line_plane(line: Line3, plane: Plane) -> Line3 | P3 | None:
+        """
+        Calculate the intersection between a line and a plane
+        A line and a plane can intersect in a line, when the line
+        lies on the plane. A line and a plane do not intersect when
+        the line is parallel to the plane. Otherwise, the line and
+        the plane intersect in a single point.
+        """
+        try:
+            t = (neg(plane.d) - dot(plane.normal, line.origin_vector)) \
+                / dot(plane.normal, line.direction_vector)
+        except ZeroDivisionError:
+            t = 0
+        point_on_line = line.point_at_t(t)
+
+        if not plane.contains_point(point_on_line):
+            # A point is not on the line
+            return None
+        if plane.is_parallel(line):
+            # The line is on the plane
+            return line
+        # The line intersects the plane in a single point
+        return point_on_line
+
+
+# Axis dimensions for 3D drawing
+DEFAULT_XLIM3D = (-10, 10)
+DEFAULT_YLIM3D = (-10, 10)
+DEFAULT_ZLIM3D = (-10, 10)
+
+XY_PLANE = Plane(P3(0, 0, 0), Vec3(0, 0, 1))
+YZ_PLANE = Plane(P3(0, 0, 0), Vec3(1, 0, 0))
+ZX_PLANE = Plane(P3(0, 0, 0), Vec3(0, 1, 0))
+
+
+class Scene:
+    """A scene is used to store objects and display them"""
+    def __init__(self) -> None:
+        self.vectors: list[Vec3] = []
+        self.points: list[P3] = []
+        self.lines: list[Line3] = []
+        self.fig = None
+
+    def add(self, *args: Vec3 | P3 | Line3) -> None:
+        """Adds objects to the scene"""
+        for obj in args:
+            if type(obj) == Vec3:
+                self.vectors.append(obj)
+            elif type(obj) == P3:
+                self.points.append(obj)
+            elif type(obj) == Line3:
+                self.lines.append(obj)
+            else:
+                raise ValueError("Invalid object type")
+
+    def draw(self, show=True) -> None:
+        """Draws the scene"""
+        fig = plt.figure()
+        ax = fig.add_subplot(projection='3d')
+
+        ax.set_xlim3d(DEFAULT_XLIM3D)
+        ax.set_ylim3d(DEFAULT_YLIM3D)
+        ax.set_zlim3d(DEFAULT_ZLIM3D)
+
+        for vector in self.vectors:
+            ax.quiver(
+                0, 0, 0,
+                vector.x, vector.y, vector.z,
+                color="red"
+            )
+
+        for point in self.points:
+            ax.scatter(point.x, point.y, point.z, color="blue")
+
+        for line in self.lines:
+            xy_intersection = Intersection.line_plane(line, XY_PLANE)
+            yz_intersection = Intersection.line_plane(line, YZ_PLANE)
+            ax.plot(
+                [xy_intersection.x, yz_intersection.x],
+                [xy_intersection.y, yz_intersection.y],
+                [xy_intersection.z, yz_intersection.z],
+                color="green"
+            )
+
+        if show:
+            plt.show()

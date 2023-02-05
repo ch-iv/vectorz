@@ -17,6 +17,7 @@
       cross
       dot
       is_scalar_multiple
+      neg
       parallelogram_area
       scalar_projection
    
@@ -28,9 +29,12 @@
 
    .. autosummary::
    
+      Intersection
       Line3
       P3
       Plane
+      Scene
+      ShortestDistance
       Vec2
       Vec3
    

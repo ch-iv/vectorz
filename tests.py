@@ -1,6 +1,6 @@
 import pytest
 
-from vectorzz import Vec3
+from vectorzz import Vec3, Scene
 from vectorzz import Vec2
 from vectorzz import cross
 from vectorzz import dot
@@ -12,6 +12,9 @@ from vectorzz import Line3
 from vectorzz import P3
 from vectorzz import Plane
 from vectorzz import is_scalar_multiple
+from vectorzz import Intersection
+from vectorzz import XY_PLANE, ZX_PLANE, YZ_PLANE
+from vectorzz import ShortestDistance
 
 
 def test_initialize_vec3():
@@ -453,10 +456,138 @@ def test_is_scalar_multiple():
         is_scalar_multiple(P3(1, 2, 3), Vec3(2, 4, 7))
 
 
-def test_is_line_parallel():
+def test_plane_is_parallel():
     p1 = Plane(P3(4, 5, 6), Vec3(1, 2, 3))
     assert p1.is_parallel(Plane(P3(4, 5, 6), Vec3(1, 2, 3)))
     assert p1.is_parallel(Plane(P3(4, 5, 6), Vec3(2, 4, 6)))
     assert p1.is_parallel(Plane(P3(0, 0, 32/3), Vec3(1, 2, 3)))
     assert p1.is_parallel(Plane(P3(0, 0, 33/3), Vec3(1, 2, 3)))
     assert not p1.is_parallel(Plane(P3(0, 0, 0), Vec3(1, 2, 42)))
+
+    p2 = Plane.from_normal_and_d(Vec3(1, 1, 1), -2)
+    line = Line3(Vec3(0, 0, 0), Vec3(0, 2, 0))
+    assert not p2.is_parallel(line)
+
+    line = Line3(Vec3(0, 0, 0), Vec3(0, 0, 1))
+    assert ZX_PLANE.is_parallel(line)
+
+    with pytest.raises(ValueError):
+        p1.is_parallel(Vec2(1, 2))
+
+
+def test_point_at_t():
+    l1 = Line3(Vec3(1, 2, 3), Vec3(4, 5, 6))
+    assert l1.point_at_t(0) == P3(1, 2, 3)
+    assert l1.point_at_t(1) == P3(5, 7, 9)
+
+
+def test_line_plane_intersection():
+    plane = Plane.from_normal_and_d(Vec3(3, -2, 1), -10)
+    line = Line3(Vec3(2, 1, 0), Vec3(-1, 1, 3))
+    intersection = Intersection.line_plane(line, plane)
+    assert intersection == P3(5, -2, -9)
+
+    line = Line3(Vec3(0, 0, 1), Vec3(0, 0, 2))
+    assert Intersection.line_plane(line, XY_PLANE) == P3(0, 0, 0)
+
+    line = Line3(Vec3(0, 1, 0), Vec3(0, 2, 0))
+    assert Intersection.line_plane(line, ZX_PLANE) == P3(0, 0, 0)
+
+    line = Line3(Vec3(1, 0, 0), Vec3(1, 0, 0))
+    assert Intersection.line_plane(line, YZ_PLANE) == P3(0, 0, 0)
+
+    line = Line3(Vec3(0, 0, 0), Vec3(0, 0, 1))
+    assert Intersection.line_plane(line, YZ_PLANE) == line
+
+    line = Line3(Vec3(1, 1, 1), Vec3(0, 1, 0))
+    assert Intersection.line_plane(line, YZ_PLANE) is None
+
+
+def test_shortest_distance_point_point():
+    p1 = P3(1, 2, 3)
+    p2 = P3(4, 5, 6)
+    assert ShortestDistance.point_point(p1, p2) == 5.196152422706632
+
+    p1 = P3(1, 2, 3)
+    p2 = P3(1, 2, 3)
+    assert ShortestDistance.point_point(p1, p2) == 0
+
+    p1 = P3(0, 0, 1)
+    p2 = P3(0, 0, 0)
+    assert ShortestDistance.point_point(p1, p2) == 1
+
+
+def test_shortest_distance_line_line():
+    pass
+
+
+def test_shortest_distance_line_plane():
+    pass
+
+
+def test_shortest_distance_plane_plane():
+    pass
+
+
+def test_shortest_distance_point_line():
+    pass
+
+
+def test_shortest_distance_point_plane():
+    pass
+
+
+def test_init_scene():
+    scene = Scene()
+    assert not bool(scene.vectors)
+    assert not bool(scene.points)
+    assert not bool(scene.lines)
+    assert scene.fig is None
+
+
+def test_add_vector():
+    scene = Scene()
+    v1 = Vec3(1, 2, 3)
+    scene.add(v1)
+    assert v1 in scene.vectors
+
+
+def test_add_point():
+    scene = Scene()
+    p1 = P3(1, 2, 3)
+    scene.add(p1)
+    assert p1 in scene.points
+
+
+def test_add_line():
+    scene = Scene()
+    line = Line3(Vec3(1, 2, 3), Vec3(4, 5, 6))
+    scene.add(line)
+    assert line in scene.lines
+
+
+def test_add_invalid():
+    scene = Scene()
+    with pytest.raises(ValueError):
+        scene.add(Vec2(1, 2))
+
+
+def test_add_many():
+    scene = Scene()
+    v1 = Vec3(1, 2, 3)
+    p1 = P3(1, 2, 3)
+    line = Line3(Vec3(1, 2, 3), Vec3(4, 5, 6))
+    scene.add(v1, p1, line)
+    assert v1 in scene.vectors
+    assert p1 in scene.points
+    assert line in scene.lines
+
+
+def test_draw_scene():
+    scene = Scene()
+    v1 = Vec3(1, 2, 3)
+    p1 = P3(1, 2, 3)
+    line = Line3(Vec3(1, 2, 3), Vec3(4, 5, 6))
+    scene.add(v1, p1, line)
+    scene.draw(show=False)
+    assert True
